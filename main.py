@@ -10,18 +10,21 @@ def get_coordinates(city, key):
         if results:
             lat = round(results[0]['geometry']['lat'], 2)
             lon = round(results[0]['geometry']['lng'], 2)
+            cur = results[0]['annotations']['currency']['name']
             country = results[0]['components']['country']
             osm_url = f"https://www.openstreetmap.org/?mlat={lat}&mlon={lon}"
             if "state" in results[0]['components']:
                 region = results[0]['components']['state']
                 return {
                     "coordinates": f"Широта: {lat}, Долгота: {lon} \nСтрана: {country} \nРегион: {region}",
-                "map_url": osm_url
+                    "map_url": osm_url,
+                    "currency": cur
                         }
             else:
                 return {
                     "coordinates": f"Широта: {lat}, Долгота: {lon} \nСтрана: {country}",
-                "map_url": osm_url
+                    "map_url": osm_url,
+                    "currency": cur
                         }
         else:
             return "Город не найден"
@@ -32,8 +35,9 @@ def show_coordinates(event=None):
     global map_url
     city = entry.get()
     result = get_coordinates(city, key)
-    label.config(text=f"Координаты города {city}: \n{result["coordinates"]}")
+    label.config(text=f"Координаты города {city}: \n {result['coordinates']} \n Валюта: {result['currency']}")
     map_url = result["map_url"]
+
 
 
 def show_map():
@@ -41,12 +45,16 @@ def show_map():
       webbrowser.open(map_url)
 
 
+def clear_all():
+    entry.delete(0, END)
+    label.config(text="Введите город и нажмите на кнопку")
+
 key = 'e9ec7525fce84f3195385e31ba11c878'
 map_url = ""
 
 window = Tk()
 window.title("Координаты городов")
-window.geometry("320x160")
+window.geometry("320x200")
 
 entry = Entry()
 entry.pack()
@@ -60,5 +68,8 @@ label.pack()
 
 map_button = Button(text="Показать карту", command=show_map)
 map_button.pack()
+
+clear_button = Button(text="Очистить", command=clear_all)
+clear_button.pack()
 
 window.mainloop()
